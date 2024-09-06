@@ -11,7 +11,7 @@ Creating an application to identify the presence of government issued personally
 5. Shashikanth
 6. Chaitanya Medaboina
 
-## Instructions to run use api server
+## Instructions to use api server
 
 ### Start the api server
 `python api.py`
