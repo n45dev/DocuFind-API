@@ -14,17 +14,19 @@ Creating an application to identify the presence of government issued personally
 ## Instructions to use api server
 
 ### Start the api server
-`python api.py`
+```bash
+python api.py
+```
 
 ### Upload a pdf to the api server
 
-#### Using curl: 
+#### Using curl:
 
 ```bash
 curl -X POST -F "file=@input.pdf" http://localhost:5000/upload
 ```
 
-#### Java Script: 
+#### Java Script:
 
 ```javascript
 const response = await fetch(`${API_URL}/upload`, {
