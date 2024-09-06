@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>SIH Project</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <div class="container">
+            <h1>SIH Project</h1>
+            <form id="uploadForm">
+                <input
+                    type="file"
+                    id="pdfFile"
+                    name="file"
+                    accept="application/pdf"
+                />
+                <button type="submit">Upload</button>
+            </form>
+
+            <div id="results" style="display: none">
+                <h2>Extracted Information</h2>
+                <div id="aadhaarNumbers"></div>
+                <div id="panNumbers"></div>
+                <div id="dlNumbers"></div>
+                <div id="phoneNumbers"></div>
+
+                <h2>Underlined PDF</h2>
+                <a id="downloadLink" href="#" download
+                    >Download Underlined PDF</a
+                >
+
+                <h2>Generated Images</h2>
+                <div id="imageContainer"></div>
+            </div>
+        </div>
+
+        <script src="main.js"></script>
+    </body>
+</html>
