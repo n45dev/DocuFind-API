@@ -115,6 +115,16 @@ def get_image_from_db(pdf_id, page_number):
     conn.close()
     return image_data[0] if image_data else None
 
+# Retrive no of pdfs in the database
+def get_pdf_count():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM pdf_files")
+    count = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return count[0] if count else None
+
 @app.route('/upload', methods=['POST'])
 def upload_pdf():
     if 'file' not in request.files:
@@ -210,6 +220,16 @@ def get_image(pdf_id, page_number):
         return jsonify({"error": "Image not found"}), 404
 
     return send_file(BytesIO(image_data), mimetype='image/png')
+
+@app.route('/pdf_count', methods=['GET'])
+def get_pdf_count_route():
+    key = request.args.get('key')
+
+    if key != api_key:
+        return jsonify({"error": "Invalid key"}), 401
+
+    count = get_pdf_count()
+    return jsonify({"count": count})
 
 if __name__ == '__main__':
     init_db()
