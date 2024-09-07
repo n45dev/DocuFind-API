@@ -1,8 +1,40 @@
 services:
   flask:
+    depends_on:
+      - mariadb
     container_name: sih-api
     ports:
       - "5000:5000"
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_HOST=mariadb
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_PORT=3306
+      - API_KEY=${API_KEY}
+    networks:
+      - sih-network
+    restart: unless-stopped
+
+  mariadb:
+    image: lscr.io/linuxserver/mariadb:latest
+    container_name: mariadb
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - ./data/mariadb:/config
+    restart: unless-stopped
+    networks:
+      - sih-network
+
+networks:
+  sih-network:
