@@ -11,22 +11,22 @@ Creating an application to identify the presence of government issued personally
 5. Shashikanth
 6. Chaitanya Medaboina
 
-## Instructions to use api server
+## Instructions to use the API server
 
-### API Endpoints
+### API Endpoints:
 
 #### Base URL: `https://sih-api.knsrinath.com`
 
-##### POST
+##### POST:
 
 1. `/upload` - To upload a file to the server
 
-##### GET
+##### GET:
 
 1. `/pdf/<file_id>` - To get the highlighted pdf file
 2. `/image/<file_id>/<page_number>` - To get the highlighted image of a page in the pdf file
 
-### Example: Upload a pdf to the api server
+### Example: Uploading a pdf to the API server
 
 #### Using curl:
 
