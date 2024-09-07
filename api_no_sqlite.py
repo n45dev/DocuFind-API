@@ -1,31 +1,11 @@
 import re
 import fitz
-import os
-import sqlite3
 from flask import Flask, request, jsonify, send_file
 from io import BytesIO
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
-
-# Initialize the SQLite database
-def init_db():
-    conn = sqlite3.connect('pdf_data.db')
-    cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS pdf_files (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        uploaded_pdf BLOB,
-                        underlined_pdf BLOB)''')
-
-    cursor.execute('''CREATE TABLE IF NOT EXISTS pdf_images (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        page_number INTEGER,
-                        image BLOB,
-                        pdf_id INTEGER,
-                        FOREIGN KEY (pdf_id) REFERENCES pdf_files (id))''')
-    conn.commit()
-    conn.close()
 
 def extract_numbers(pdf_path, pattern):
     numbers = []
@@ -66,44 +46,6 @@ def convert_pdf_to_images(pdf_path):
     pdf_document.close()
     return images
 
-# Save PDF and images to the database
-def save_to_db(uploaded_pdf_bytes, underlined_pdf_bytes, images):
-    conn = sqlite3.connect('pdf_data.db')
-    cursor = conn.cursor()
-
-    # Insert the PDFs
-    cursor.execute("INSERT INTO pdf_files (uploaded_pdf, underlined_pdf) VALUES (?, ?)",
-                   (uploaded_pdf_bytes, underlined_pdf_bytes))
-    pdf_id = cursor.lastrowid  # Get the generated pdf_id
-
-    # Insert the images
-    for page_number, image in images:
-        cursor.execute("INSERT INTO pdf_images (page_number, image, pdf_id) VALUES (?, ?, ?)",
-                       (page_number, image, pdf_id))
-
-    conn.commit()
-    conn.close()
-
-    return pdf_id  # Return the pdf_id
-
-# Retrieve a PDF from the database
-def get_pdf_from_db(pdf_id):
-    conn = sqlite3.connect('pdf_data.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT underlined_pdf FROM pdf_files WHERE id = ?", (pdf_id,))
-    pdf_data = cursor.fetchone()
-    conn.close()
-    return pdf_data[0] if pdf_data else None
-
-# Retrieve an image from the database
-def get_image_from_db(pdf_id, page_number):
-    conn = sqlite3.connect('pdf_data.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT image FROM pdf_images WHERE pdf_id = ? AND page_number = ?", (pdf_id, page_number))
-    image_data = cursor.fetchone()
-    conn.close()
-    return image_data[0] if image_data else None
-
 @app.route('/upload', methods=['POST'])
 def upload_pdf():
     if 'file' not in request.files:
@@ -128,11 +70,6 @@ def upload_pdf():
         f.write(uploaded_pdf_bytes)
 
     # Define patterns for Aadhaar, PAN, DL, and phone numbers
-    # aadhaar_pattern = r'\b\d{4} \d{4} \d{4}\b'  # For "XXXX XXXX XXXX"
-    # pan_pattern = r'\b[A-Z]{5}\d{4}[A-Z]\b'     # For "YYYYYXXXXY"
-    # dl_pattern = r'\b[A-Z]{2}[0-9]{2}\s?[0-9]{12}\b'  # For "YY00 XXXXXXXXXX" or "YY00XXXXXXXXXX"
-    # phone_pattern = r'[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}'  # For "+XX XXXXXXXXXX" or "XXXXXXXXXX"
-
     aadhaar_pattern = ("^[2-9]{1}[0-9]{3}\\" + "s[0-9]{4}\\s[0-9]{4}$")
     pan_pattern = "[A-Z]{5}[0-9]{4}[A-Z]{1}"
     dl_pattern = ("^(([A-Z]{2}[0-9]{2})" + "( )|([A-Z]{2}-[0-9]" + "{2}))((19|20)[0-9]" + "[0-9])[0-9]{7}$")
@@ -164,47 +101,48 @@ def upload_pdf():
     with open(output_pdf_path, 'rb') as f:
         underlined_pdf_bytes = f.read()
 
-    # Save the uploaded PDF, underlined PDF, and images to the database
-    pdf_id = save_to_db(uploaded_pdf_bytes, underlined_pdf_bytes, images)
-
     return jsonify({
-        "message": "PDF processed and saved successfully",
-        "pdf_id": pdf_id,
-        "no_of_pages": no_of_pages,
-        "extracted_aadhaar_numbers": extracted_aadhaar_numbers,
-        "extracted_pan_numbers": extracted_pan_numbers,
-        "extracted_dl_numbers": extracted_dl_numbers,
-        "extracted_phone_numbers": extracted_phone_numbers
+        "aadhaar_numbers": extracted_aadhaar_numbers,
+        "pan_numbers": extracted_pan_numbers,
+        "dl_numbers": extracted_dl_numbers,
+        "phone_numbers": extracted_phone_numbers
     })
 
-@app.route('/pdf/<int:pdf_id>', methods=['GET'])
-def download_pdf(pdf_id):
-    pdf_data = get_pdf_from_db(pdf_id)
+@app.route('/pdf', methods=['POST'])
+def download_pdf():
+    uploaded_file = request.files['file']
+    uploaded_pdf_bytes = uploaded_file.read()
 
-    key = request.args.get('key')
-
-    if key != 'stop_hacking_srinath':
-        return jsonify({"error": "Invalid key"}), 401
-
-    if not pdf_data:
-        return jsonify({"error": "PDF not found"}), 404
-
-    return send_file(BytesIO(pdf_data), mimetype='application/pdf', as_attachment=True, download_name='underlined.pdf')
-
-@app.route('/image/<int:pdf_id>/<int:page_number>', methods=['GET'])
-def get_image(pdf_id, page_number):
-    image_data = get_image_from_db(pdf_id, page_number)
-
-    key = request.args.get('key')
+    key = request.form.get('key')
 
     if key != 'stop_hacking_srinath':
         return jsonify({"error": "Invalid key"}), 401
 
-    if not image_data:
-        return jsonify({"error": "Image not found"}), 404
+    return send_file(BytesIO(uploaded_pdf_bytes), mimetype='application/pdf', as_attachment=True, download_name='underlined.pdf')
+
+@app.route('/image/<int:page_number>', methods=['POST'])
+def get_image(page_number):
+    uploaded_file = request.files['file']
+    uploaded_pdf_bytes = uploaded_file.read()
+
+    key = request.form.get('key')
+
+    if key != 'stop_hacking_srinath':
+        return jsonify({"error": "Invalid key"}), 401
+
+    input_pdf_path = 'uploaded.pdf'
+
+    with open(input_pdf_path, 'wb') as f:
+        f.write(uploaded_pdf_bytes)
+
+    images = convert_pdf_to_images(input_pdf_path)
+
+    if page_number > len(images) or page_number < 1:
+        return jsonify({"error": "Page number out of range"}), 404
+
+    page_number, image_data = images[page_number - 1]
 
     return send_file(BytesIO(image_data), mimetype='image/png')
 
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True)

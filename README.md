@@ -13,24 +13,36 @@ Creating an application to identify the presence of government issued personally
 
 ## Instructions to use api server
 
-### Start the api server
-```bash
-python api.py
-```
+### API Endpoints
 
-### Upload a pdf to the api server
+#### Base URL: `https://sih-api.knsrinath.com`
+
+##### POST
+
+1. `/upload` - To upload a file to the server
+
+##### GET
+
+1. `/pdf/<file_id>` - To get the highlighted pdf file
+2. `/image/<file_id>/<page_number>` - To get the highlighted image of a page in the pdf file
+
+### Example: Upload a pdf to the api server
 
 #### Using curl:
 
 ```bash
-curl -X POST -F "file=@input.pdf" http://localhost:5000/upload
+curl -X POST -F "file=@example_input.pdf" -F "key=stop_hacking_srinath" https://sih-api.knsrinath.com/upload
 ```
 
 #### Java Script:
 
 ```javascript
+const formData = new FormData();
+formData.append("file", pdfFile);
+formData.append("key", "stop_hacking_srinath");
+
 const response = await fetch(`${API_URL}/upload`, {
-      method: "POST",
-      body: formData,
+  method: "POST",
+  body: formData,
 });
 ```
