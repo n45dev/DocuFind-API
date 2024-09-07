@@ -6,11 +6,9 @@ body {
 }
 
 .container {
-    width: 80%;
-    margin: auto;
-    padding: 20px;
+    margin: 2em;
+    padding: 2em;
     background-color: #fff;
-    margin-top: 50px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 5px;
 }

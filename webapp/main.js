@@ -1,4 +1,5 @@
 const API_URL = "http://localhost:5000"; // Flask API server
+const API_KEY = "arebha!"; // Key for authorization
 
 document
   .getElementById("uploadForm")
@@ -13,7 +14,7 @@ document
 
     const formData = new FormData();
     formData.append("file", pdfFile);
-    formData.append("key", "stop_hacking_srinath"); // Add the key for authorization
+    formData.append("key", API_KEY); // Add the key for authorization
 
     const response = await fetch(`${API_URL}/upload`, {
       method: "POST",
@@ -50,7 +51,7 @@ function displayResults(data) {
 
   // Link to download the underlined PDF
   const downloadLink = document.createElement("a");
-  downloadLink.href = `${API_URL}/pdf/${pdf_id}?key=stop_hacking_srinath`; // Fetch the underlined PDF using the key
+  downloadLink.href = `${API_URL}/pdf/${pdf_id}?key=${API_KEY}`; // Fetch the underlined PDF using the key
   downloadLink.textContent = "Download Underlined PDF";
   downloadLink.download = "underlined.pdf"; // Name for the downloaded PDF
   document.getElementById("downloadLink").innerHTML = ""; // Clear any previous content
@@ -62,7 +63,7 @@ function displayResults(data) {
 
   for (let page = 1; page <= no_of_pages; page++) {
     const img = document.createElement("img");
-    img.src = `${API_URL}/image/${pdf_id}/${page}?key=stop_hacking_srinath`; // Fetch the underlined image for each page
+    img.src = `${API_URL}/image/${pdf_id}/${page}?key=${API_KEY}`; // Fetch the underlined image for each page
     img.alt = `Page ${page}`;
     img.style.width = "100%"; // Resize for web display
     imageContainer.appendChild(img);
