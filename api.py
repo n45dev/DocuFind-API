@@ -11,7 +11,7 @@ CORS(app)
 
 # Initialize the SQLite database
 def init_db():
-    conn = sqlite3.connect('pdf_data.db')
+    conn = sqlite3.connect('data/pdf_data.db')
     cursor = conn.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS pdf_files (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -68,7 +68,7 @@ def convert_pdf_to_images(pdf_path):
 
 # Save PDF and images to the database
 def save_to_db(uploaded_pdf_bytes, underlined_pdf_bytes, images):
-    conn = sqlite3.connect('pdf_data.db')
+    conn = sqlite3.connect('data/pdf_data.db')
     cursor = conn.cursor()
 
     # Insert the PDFs
@@ -88,7 +88,7 @@ def save_to_db(uploaded_pdf_bytes, underlined_pdf_bytes, images):
 
 # Retrieve a PDF from the database
 def get_pdf_from_db(pdf_id):
-    conn = sqlite3.connect('pdf_data.db')
+    conn = sqlite3.connect('data/pdf_data.db')
     cursor = conn.cursor()
     cursor.execute("SELECT underlined_pdf FROM pdf_files WHERE id = ?", (pdf_id,))
     pdf_data = cursor.fetchone()
@@ -97,7 +97,7 @@ def get_pdf_from_db(pdf_id):
 
 # Retrieve an image from the database
 def get_image_from_db(pdf_id, page_number):
-    conn = sqlite3.connect('pdf_data.db')
+    conn = sqlite3.connect('data/pdf_data.db')
     cursor = conn.cursor()
     cursor.execute("SELECT image FROM pdf_images WHERE pdf_id = ? AND page_number = ?", (pdf_id, page_number))
     image_data = cursor.fetchone()
@@ -121,7 +121,7 @@ def upload_pdf():
 
     # Read the uploaded PDF file
     uploaded_pdf_bytes = file.read()
-    input_pdf_path = 'uploaded.pdf'
+    input_pdf_path = 'data/uploaded.pdf'
 
     # Save the uploaded file temporarily to extract text
     with open(input_pdf_path, 'wb') as f:
@@ -151,7 +151,7 @@ def upload_pdf():
     )
 
     # Underline the numbers in the PDF and save it temporarily
-    output_pdf_path = 'underlined.pdf'
+    output_pdf_path = 'data/underlined.pdf'
     underline_numbers_in_pdf(input_pdf_path, output_pdf_path, all_extracted_numbers)
 
     # Convert underlined PDF to images
