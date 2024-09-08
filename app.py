@@ -1,8 +1,8 @@
 from flask import Flask
 from flask_cors import CORS
-from config import API_KEY
-from db import init_db
-from routes import register_routes
+from src.config import API_KEY
+from src.db import init_db
+from src.routes import register_routes
 
 app = Flask(__name__)
 CORS(app)

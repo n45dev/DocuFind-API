@@ -1,11 +1,11 @@
 from flask import request, jsonify, send_file
 from io import BytesIO
-from pdf_processing import extract_numbers_in_pdf, underline_numbers_in_pdf, convert_pdf_to_images
-from text_processing import extract_numbers_in_text
-from db import save_pdf_to_db, get_pdf_from_db, get_image_from_db, get_pdf_count
+from src.pdf_processing import extract_numbers_in_pdf, underline_numbers_in_pdf, convert_pdf_to_images
+from src.text_processing import extract_numbers_in_text
+from src.db import save_pdf_to_db, get_pdf_from_db, get_image_from_db, get_pdf_count
 import os
 import fitz
-from config import API_KEY
+from src.config import API_KEY
 
 def register_routes(app):
     @app.route('/upload_pdf', methods=['POST'])
