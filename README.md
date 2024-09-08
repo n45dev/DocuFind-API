@@ -25,6 +25,7 @@ Creating an application to identify the presence of government issued personally
 
 1. `/pdf/<file_id>` - To get the highlighted pdf file
 2. `/image/<file_id>/<page_number>` - To get the highlighted image of a page in the pdf file
+3. `/pdf_count` - To get the number of pdf files uploaded
 
 ### Example: Uploading a pdf to the API server
 
