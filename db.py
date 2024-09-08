@@ -28,7 +28,7 @@ def init_db():
     cursor.close()
     conn.close()
 
-def save_to_db(uploaded_pdf_bytes, underlined_pdf_bytes, images):
+def save_pdf_to_db(uploaded_pdf_bytes, underlined_pdf_bytes, images):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("INSERT INTO pdf_files (uploaded_pdf, underlined_pdf) VALUES (%s, %s)",

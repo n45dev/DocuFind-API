@@ -1,7 +1,7 @@
 import re
 import fitz
 
-def extract_numbers(pdf_path, pattern):
+def extract_numbers_in_pdf(pdf_path, pattern):
     numbers = []
     with open(pdf_path, 'rb') as file:
         reader = fitz.open(file)
