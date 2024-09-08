@@ -8,6 +8,7 @@ COPY ./src /app/src
 
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install gunicorn
+RUN apt update && apt install -y tesseract-ocr
 RUN mkdir -p /app/data
 
 EXPOSE 5000

@@ -2,6 +2,7 @@ from flask import request, jsonify, send_file
 from io import BytesIO
 from src.pdf_processing import extract_numbers_in_pdf, underline_numbers_in_pdf, convert_pdf_to_images
 from src.text_processing import extract_numbers_in_text
+from src.image_processing import extract_numbers_in_image
 from src.db import save_pdf_to_db, get_pdf_from_db, get_image_from_db, get_pdf_count
 import os
 import fitz
@@ -84,6 +85,44 @@ def register_routes(app):
         extracted_pan_numbers = extract_numbers_in_text(text, pan_pattern)
         extracted_dl_numbers = extract_numbers_in_text(text, dl_pattern)
         extracted_phone_numbers = extract_numbers_in_text(text, phone_pattern)
+
+        all_extracted_numbers = (
+            extracted_aadhaar_numbers +
+            extracted_pan_numbers +
+            extracted_dl_numbers +
+            extracted_phone_numbers
+        )
+
+        return jsonify({
+            "extracted_aadhaar_numbers": extracted_aadhaar_numbers,
+            "extracted_pan_numbers": extracted_pan_numbers,
+            "extracted_dl_numbers": extracted_dl_numbers,
+            "extracted_phone_numbers": extracted_phone_numbers
+        })
+
+    @app.route('/upload_image', methods=['POST'])
+    def upload_image():
+        if 'file' not in request.files:
+            return jsonify({"error": "No file part"}), 400
+
+        file = request.files['file']
+        key = request.form.get('key')
+
+        if key != API_KEY:
+            return jsonify({"error": "Invalid key"}), 401
+
+        if file.filename == '':
+            return jsonify({"error": "No selected file"}), 400
+
+        aadhaar_pattern = r"\b\d{4} \d{4} \d{4}\b"
+        pan_pattern = r"[A-Z]{5}[0-9]{4}[A-Z]{1}"
+        dl_pattern = r"^(([A-Z]{2}[0-9]{2})( )|([A-Z]{2}-[0-9]{2}))((19|20)[0-9]{2})[0-9]{7}$"
+        phone_pattern = r'[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}'
+
+        extracted_aadhaar_numbers = extract_numbers_in_image(file, aadhaar_pattern)
+        extracted_pan_numbers = extract_numbers_in_image(file, pan_pattern)
+        extracted_dl_numbers = extract_numbers_in_image(file, dl_pattern)
+        extracted_phone_numbers = extract_numbers_in_image(file, phone_pattern)
 
         all_extracted_numbers = (
             extracted_aadhaar_numbers +
