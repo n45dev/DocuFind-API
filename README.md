@@ -19,7 +19,8 @@ Creating an application to identify the presence of government issued personally
 
 ##### POST:
 
-1. `/upload` - To upload a file to the server
+1. `/upload_pdf` - To upload a pdf file to the server
+2. `/upload_text` - To upload a text to the server
 
 ##### GET:
 
