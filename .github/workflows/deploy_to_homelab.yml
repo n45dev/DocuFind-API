@@ -1,0 +1,30 @@
+name: Deploy to Homelab
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Authenticate with Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          hostname: Github-actions
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Start Deployment
+        uses: FarisZR/tailscale-ssh-deploy@v1
+        with:
+          remote_host: me@100.100.1.1
+          directory: ./
+          remote_destination: /home/me/sih
+          post_upload_command: echo thats it
