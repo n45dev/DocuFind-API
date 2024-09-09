@@ -1,1 +1,5 @@
-tagOwners: tag:ci
+tagOwners": {
+   ...
+   "tag:ci": ["autogroup:admin"],
+   ...
+}
