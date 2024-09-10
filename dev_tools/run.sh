@@ -10,4 +10,4 @@ export MYSQL_DATABASE=pdf_data
 export API_KEY=arebha!
 
 cd ..
-python api.py
+python app.py
