@@ -22,10 +22,13 @@ jobs:
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
 
-      - name: Start Deployment
-        uses: FarisZR/tailscale-ssh-deploy@v1
+      - name: SSH
+        uses: ErenKrt/ssh-push@main
         with:
-          remote_host: me@100.100.1.1
-          directory: ./
-          remote_destination: /home/me/sih
-          post_upload_command: echo thats it
+          host: homelab
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: "./"
+          destination: "/home/me/sih"
+          scripts: |
+            echo hello
