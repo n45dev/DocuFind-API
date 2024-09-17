@@ -1,14 +1,31 @@
 from flask import request, jsonify, send_file
 from io import BytesIO
 from src.pdf_processing import extract_numbers_in_pdf, underline_numbers_in_pdf, convert_pdf_to_images
-from src.text_processing import extract_numbers_in_text
 from src.image_processing import extract_numbers_in_image
-from src.db import save_pdf_to_db, get_pdf_from_db, get_image_from_db, get_pdf_count
+from src.db import save_pdf_to_db, get_pdf_from_db, get_image_from_db, get_pdf_count, create_user_in_db
 import os
 import fitz
 from src.config import API_KEY
 
 def register_routes(app):
+    @app.route('/create_user', methods=['POST'])
+    def create_user():
+        username = request.form.get('username')
+        password = request.form.get('password')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+
+        if not username or not password or not email or not phone:
+            return jsonify({
+                "error": "Missing required fields"
+            }), 400
+        else:
+            create_user_in_db(username, password, email, phone)
+
+        return jsonify({
+            "message": "User created successfully!",
+        })
+
     @app.route('/upload_pdf', methods=['POST'])
     def upload_pdf():
         if 'file' not in request.files:
@@ -31,19 +48,22 @@ def register_routes(app):
 
         aadhaar_pattern = r"\b\d{4} \d{4} \d{4}\b"
         pan_pattern = r"[A-Z]{5}[0-9]{4}[A-Z]{1}"
-        dl_pattern = r"^(([A-Z]{2}[0-9]{2})( )|([A-Z]{2}-[0-9]{2}))((19|20)[0-9]{2})[0-9]{7}$"
+        dl_pattern = r"(([A-Z]{2}[0-9]{2})( )|([A-Z]{2}-[0-9]{2}))((19|20)[0-9]{2})[0-9]{7}"
         phone_pattern = r'[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}'
+        email_pattern = r'[\w\.=-]+@[\w\.-]+\.[\w]{2,3}'
 
         extracted_aadhaar_numbers = extract_numbers_in_pdf(input_pdf_path, aadhaar_pattern)
         extracted_pan_numbers = extract_numbers_in_pdf(input_pdf_path, pan_pattern)
         extracted_dl_numbers = extract_numbers_in_pdf(input_pdf_path, dl_pattern)
         extracted_phone_numbers = extract_numbers_in_pdf(input_pdf_path, phone_pattern)
+        extracted_email_addresses = extract_numbers_in_pdf(input_pdf_path, email_pattern)
 
         all_extracted_numbers = (
             extracted_aadhaar_numbers +
             extracted_pan_numbers +
             extracted_dl_numbers +
-            extracted_phone_numbers
+            extracted_phone_numbers +
+            extracted_email_addresses
         )
 
         output_pdf_path = 'data/underlined.pdf'
@@ -65,39 +85,8 @@ def register_routes(app):
             "extracted_aadhaar_numbers": extracted_aadhaar_numbers,
             "extracted_pan_numbers": extracted_pan_numbers,
             "extracted_dl_numbers": extracted_dl_numbers,
-            "extracted_phone_numbers": extracted_phone_numbers
-        })
-
-    @app.route('/upload_text', methods=['POST'])
-    def upload_text():
-        text = request.form.get('text')
-        key = request.form.get('key')
-
-        if key != API_KEY:
-            return jsonify({"error": "Invalid key"}), 401
-
-        aadhaar_pattern = r"\b\d{4} \d{4} \d{4}\b"
-        pan_pattern = r"[A-Z]{5}[0-9]{4}[A-Z]{1}"
-        dl_pattern = r"^(([A-Z]{2}[0-9]{2})( )|([A-Z]{2}-[0-9]{2}))((19|20)[0-9]{2})[0-9]{7}$"
-        phone_pattern = r'[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}'
-
-        extracted_aadhaar_numbers = extract_numbers_in_text(text, aadhaar_pattern)
-        extracted_pan_numbers = extract_numbers_in_text(text, pan_pattern)
-        extracted_dl_numbers = extract_numbers_in_text(text, dl_pattern)
-        extracted_phone_numbers = extract_numbers_in_text(text, phone_pattern)
-
-        all_extracted_numbers = (
-            extracted_aadhaar_numbers +
-            extracted_pan_numbers +
-            extracted_dl_numbers +
-            extracted_phone_numbers
-        )
-
-        return jsonify({
-            "extracted_aadhaar_numbers": extracted_aadhaar_numbers,
-            "extracted_pan_numbers": extracted_pan_numbers,
-            "extracted_dl_numbers": extracted_dl_numbers,
-            "extracted_phone_numbers": extracted_phone_numbers
+            "extracted_phone_numbers": extracted_phone_numbers,
+            "extracted_email_addresses": extracted_email_addresses
         })
 
     @app.route('/upload_image', methods=['POST'])
@@ -116,26 +105,30 @@ def register_routes(app):
 
         aadhaar_pattern = r"\b\d{4} \d{4} \d{4}\b"
         pan_pattern = r"[A-Z]{5}[0-9]{4}[A-Z]{1}"
-        dl_pattern = r"^(([A-Z]{2}[0-9]{2})( )|([A-Z]{2}-[0-9]{2}))((19|20)[0-9]{2})[0-9]{7}$"
+        dl_pattern = r"(([A-Z]{2}[0-9]{2})( )|([A-Z]{2}-[0-9]{2}))((19|20)[0-9]{2})[0-9]{7}"
         phone_pattern = r'[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}'
+        email_pattern = r'[\w\.=-]+@[\w\.-]+\.[\w]{2,3}'
 
         extracted_aadhaar_numbers = extract_numbers_in_image(file, aadhaar_pattern)
         extracted_pan_numbers = extract_numbers_in_image(file, pan_pattern)
         extracted_dl_numbers = extract_numbers_in_image(file, dl_pattern)
         extracted_phone_numbers = extract_numbers_in_image(file, phone_pattern)
+        extracted_email_addresses = extract_numbers_in_pdf(file, email_pattern)
 
         all_extracted_numbers = (
             extracted_aadhaar_numbers +
             extracted_pan_numbers +
             extracted_dl_numbers +
-            extracted_phone_numbers
+            extracted_phone_numbers +
+            extracted_email_addresses
         )
 
         return jsonify({
             "extracted_aadhaar_numbers": extracted_aadhaar_numbers,
             "extracted_pan_numbers": extracted_pan_numbers,
             "extracted_dl_numbers": extracted_dl_numbers,
-            "extracted_phone_numbers": extracted_phone_numbers
+            "extracted_phone_numbers": extracted_phone_numbers,
+            "extracted_email_addresses": extracted_email_addresses
         })
 
     @app.route('/pdf/<int:pdf_id>', methods=['GET'])

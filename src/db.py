@@ -24,6 +24,16 @@ def init_db():
                         image LONGBLOB,
                         pdf_id INT,
                         FOREIGN KEY (pdf_id) REFERENCES pdf_files (id))''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS users (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    username VARCHAR(255),
+                    password VARCHAR(255),
+                    email VARCHAR(255),
+                    phone_number VARCHAR(255),
+                    aadhaar_number VARCHAR(255),
+                    pan_number VARCHAR(255),
+                    dl_number VARCHAR(255)
+                );''')
     conn.commit()
     cursor.close()
     conn.close()
@@ -70,3 +80,11 @@ def get_pdf_count():
     cursor.close()
     conn.close()
     return count[0] if count else None
+
+def create_user_in_db(username, password, email, phone):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO users (username, password, email, phone_number) VALUES (%s, %s, %s, %s)", (username, password, email, phone))
+    conn.commit()
+    cursor.close()
+    conn.close()
