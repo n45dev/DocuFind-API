@@ -94,10 +94,10 @@ def get_pdf_count():
     conn.close()
     return count[0] if count else None
 
-def create_user_in_db(username, password, email, phone):
+def create_user_in_db(username, password, email, phone, type):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO users (username, password, email, phone_number) VALUES (%s, %s, %s, %s)", (username, password, email, phone))
+    cursor.execute("INSERT INTO users (username, password, email, phone_number, type) VALUES (%s, %s, %s, %s, %s)", (username, password, email, phone, type))
     conn.commit()
     cursor.close()
     conn.close()
@@ -114,6 +114,28 @@ def check_user_exists_in_db(email, password):
 
         results = cursor.fetchall()
         return len(results) > 0
+
+    except mysql.connector.Error as err:
+        raise Exception(f"Database error: {str(err)}")
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+def check_user_type_in_db(email):
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        query = "SELECT type FROM users WHERE email = %s"
+        cursor.execute(query, (email,))
+
+        results = cursor.fetchone()
+        return results[0] if results else None
 
     except mysql.connector.Error as err:
         raise Exception(f"Database error: {str(err)}")

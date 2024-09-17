@@ -2,7 +2,7 @@ from flask import request, jsonify, send_file
 from io import BytesIO
 from src.pdf_processing import extract_numbers_in_pdf, underline_numbers_in_pdf, convert_pdf_to_images
 from src.image_processing import extract_numbers_in_image
-from src.db import save_pdf_to_db, get_pdf_from_db, get_image_from_db, get_pdf_count, create_user_in_db, check_user_exists_in_db, create_company_in_db, get_companies_from_db, update_user_data_in_db, get_users_from_db, get_user_from_db
+from src.db import save_pdf_to_db, get_pdf_from_db, get_image_from_db, get_pdf_count, create_user_in_db, check_user_exists_in_db, create_company_in_db, get_companies_from_db, update_user_data_in_db, get_users_from_db, get_user_from_db, check_user_type_in_db
 import os
 import fitz
 from src.config import API_KEY
@@ -16,6 +16,7 @@ def register_routes(app):
         password = request.form.get('password')
         email = request.form.get('email')
         phone = request.form.get('phone')
+        type = request.form.get('type')
 
         if key != API_KEY:
             return jsonify({
@@ -27,7 +28,7 @@ def register_routes(app):
                 "error": "Missing required fields"
             }), 400
         else:
-            create_user_in_db(username, password, email, phone)
+            create_user_in_db(username, password, email, phone, type)
 
         return jsonify({
             "message": "User created successfully!",
@@ -49,9 +50,10 @@ def register_routes(app):
 
         try:
             user_exists = check_user_exists_in_db(email, password)
+            user_type = check_user_type_in_db(email)
 
             if user_exists:
-                return jsonify({"is_user": "true", "email": email}), 200
+                return jsonify({"is_user": "true", "email": email, "type": user_type}), 200
             else:
                 return jsonify({"is_user": "false"}), 404
 
