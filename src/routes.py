@@ -2,7 +2,7 @@ from flask import request, jsonify, send_file
 from io import BytesIO
 from src.pdf_processing import extract_numbers_in_pdf, underline_numbers_in_pdf, convert_pdf_to_images
 from src.image_processing import extract_numbers_in_image
-from src.db import save_pdf_to_db, get_pdf_from_db, get_image_from_db, get_pdf_count, create_user_in_db, check_user_exists_in_db, create_company_in_db, get_companies_from_db
+from src.db import save_pdf_to_db, get_pdf_from_db, get_image_from_db, get_pdf_count, create_user_in_db, check_user_exists_in_db, create_company_in_db, get_companies_from_db, update_user_data_in_db, get_users_from_db, get_user_from_db
 import os
 import fitz
 from src.config import API_KEY
@@ -51,12 +51,42 @@ def register_routes(app):
             user_exists = check_user_exists_in_db(email, password)
 
             if user_exists:
-                return jsonify({"message": "User exists"}), 200
+                return jsonify({"is_user": "true", "email": email}), 200
             else:
-                return jsonify({"message": "User does not exist"}), 404
+                return jsonify({"is_user": "false"}), 404
 
         except Exception as e:
                 return jsonify({"error": str(e)}), 500
+
+    @app.route('/get_all_users', methods=['GET'])
+    def get_all_users():
+        key = request.args.get('key')
+
+        if key != API_KEY:
+            return jsonify({
+                "error": "Invalid key"
+            }), 401
+
+        users = get_users_from_db()
+        return jsonify(users)
+
+    @app.route('/get_user_data', methods=['GET'])
+    def get_user_data():
+        key = request.args.get('key')
+        email = request.args.get('email')
+
+        if key != API_KEY:
+            return jsonify({
+                "error": "Invalid key"
+            }), 401
+
+        if not email:
+            return jsonify({
+                "error": "Missing required fields"
+            }), 400
+
+        user_data = get_user_from_db(email)
+        return jsonify(user_data)
 
     @app.route('/create_company', methods=['POST'])
     def create_company():
@@ -98,6 +128,51 @@ def register_routes(app):
         return jsonify({
             "message": "Company details fetched successfully!",
             "company_details": company_details
+        })
+
+    @app.route('/upload_pdf_new', methods=['POST'])
+    def upload_pdf_new():
+        if 'file' not in request.files:
+            return jsonify({"error": "No file part"}), 400
+
+        if 'email' not in request.form:
+            return jsonify({"error": "No email part"}), 400
+
+        file = request.files['file']
+        key = request.form.get('key')
+        email = request.form.get('email')
+
+        if key != API_KEY:
+            return jsonify({"error": "Invalid key"}), 401
+
+        if file.filename == '':
+            return jsonify({"error": "No selected file"}), 400
+
+        uploaded_pdf_bytes = file.read()
+        input_pdf_path = 'data/uploaded.pdf'
+
+        with open(input_pdf_path, 'wb') as f:
+            f.write(uploaded_pdf_bytes)
+
+        aadhaar_pattern = r"\b\d{4} \d{4} \d{4}\b"
+        pan_pattern = r"[A-Z]{5}[0-9]{4}[A-Z]{1}"
+        dl_pattern = r"(([A-Z]{2}[0-9]{2})( )|([A-Z]{2}-[0-9]{2}))((19|20)[0-9]{2})[0-9]{7}"
+
+        extracted_aadhaar_numbers = extract_numbers_in_pdf(input_pdf_path, aadhaar_pattern)
+        extracted_pan_numbers = extract_numbers_in_pdf(input_pdf_path, pan_pattern)
+        extracted_dl_numbers = extract_numbers_in_pdf(input_pdf_path, dl_pattern)
+
+        aadhaar_number = extracted_aadhaar_numbers[0] if extracted_aadhaar_numbers else None
+        pan_number = extracted_pan_numbers[0] if extracted_pan_numbers else None
+        dl_number = extracted_dl_numbers[0] if extracted_dl_numbers else None
+
+        update_user_data_in_db(email, aadhaar_number, pan_number, dl_number)
+
+        return jsonify({
+            "message": "PDF uploaded successfully!",
+            "aadhaar_number": aadhaar_number,
+            "pan_number": pan_number,
+            "dl_number": dl_number
         })
 
     @app.route('/upload_pdf', methods=['POST'])

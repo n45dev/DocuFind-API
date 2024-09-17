@@ -126,7 +126,7 @@ def check_user_exists_in_db(email, password):
 def create_company_in_db(company_name, is_mail, is_phone, is_aadhaar, is_pan, is_dlno):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO users (company_name, is_mail, is_phone, is_aadhaar, is_pan, is_dlno) VALUES (%s, %s, %s, %s)", (company_name, is_mail, is_phone, is_aadhaar, is_pan, is_dlno))
+    cursor.execute("INSERT INTO companies (company_name, is_mail, is_phone, is_aadhaar, is_pan, is_dlno) VALUES (%s, %s, %s, %s, %s, %s)", (company_name, is_mail, is_phone, is_aadhaar, is_pan, is_dlno))
     conn.commit()
     cursor.close()
     conn.close()
@@ -139,3 +139,35 @@ def get_companies_from_db():
     cursor.close()
     conn.close()
     return results
+
+def update_user_data_in_db(email, aadhaar_number, pan_number, dl_number):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE users
+        SET aadhaar_number = %s,
+            pan_number = %s,
+            dl_number = %s
+        WHERE email = %s;
+        ''', (aadhaar_number, pan_number, dl_number, email))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def get_users_from_db():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users")
+    results = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return results
+
+def get_user_from_db(email):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return result
