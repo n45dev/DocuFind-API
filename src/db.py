@@ -35,8 +35,8 @@ def init_db():
                         phone_number VARCHAR(255),
                         aadhaar_number VARCHAR(255),
                         pan_number VARCHAR(255),
-                        dl_number VARCHAR(255)),
-                        type VARCHAR(10);''')
+                        dl_number VARCHAR(255),
+                        type VARCHAR(10));''')
     # Create companies table
     cursor.execute('''CREATE TABLE IF NOT EXISTS companies (
                         id INT AUTO_INCREMENT PRIMARY KEY,
