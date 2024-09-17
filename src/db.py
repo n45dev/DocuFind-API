@@ -88,3 +88,25 @@ def create_user_in_db(username, password, email, phone):
     conn.commit()
     cursor.close()
     conn.close()
+
+def check_user_exists_in_db(email, password):
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        query = "SELECT * FROM users WHERE email = %s AND password = %s"
+        cursor.execute(query, (email, password))
+
+        results = cursor.fetchall()
+        return len(results) > 0
+
+    except mysql.connector.Error as err:
+        raise Exception(f"Database error: {str(err)}")
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()

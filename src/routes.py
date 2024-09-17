@@ -2,18 +2,25 @@ from flask import request, jsonify, send_file
 from io import BytesIO
 from src.pdf_processing import extract_numbers_in_pdf, underline_numbers_in_pdf, convert_pdf_to_images
 from src.image_processing import extract_numbers_in_image
-from src.db import save_pdf_to_db, get_pdf_from_db, get_image_from_db, get_pdf_count, create_user_in_db
+from src.db import save_pdf_to_db, get_pdf_from_db, get_image_from_db, get_pdf_count, create_user_in_db, check_user_exists_in_db
 import os
 import fitz
 from src.config import API_KEY
+import mysql.connector
 
 def register_routes(app):
-    @app.route('/create_user', methods=['POST'])
+    @app.route('/signup', methods=['POST'])
     def create_user():
+        key = request.form.get('key')
         username = request.form.get('username')
         password = request.form.get('password')
         email = request.form.get('email')
         phone = request.form.get('phone')
+
+        if key != API_KEY:
+            return jsonify({
+                "error": "Invalid key"
+            }), 401
 
         if not username or not password or not email or not phone:
             return jsonify({
@@ -25,6 +32,32 @@ def register_routes(app):
         return jsonify({
             "message": "User created successfully!",
         })
+
+    @app.route('/signin', methods=['POST'])
+    def is_user_exists():
+        key = request.form.get('key')
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        if key != API_KEY:
+            return jsonify({
+                "error": "Invalid key"
+            }), 401
+
+        if not email or not password:
+            return jsonify({"error": "Missing required fields"}), 400
+
+        try:
+            user_exists = check_user_exists_in_db(email, password)
+
+            if user_exists:
+                return jsonify({"message": "User exists"}), 200
+            else:
+                return jsonify({"message": "User does not exist"}), 404
+
+        except Exception as e:
+                return jsonify({"error": str(e)}), 500
+
 
     @app.route('/upload_pdf', methods=['POST'])
     def upload_pdf():
