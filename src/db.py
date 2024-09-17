@@ -1,4 +1,5 @@
 import os
+from flask.wrappers import json
 import mysql.connector
 
 def get_db_connection():
@@ -13,27 +14,38 @@ def get_db_connection():
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
+    # Create pdf_files table
     cursor.execute('''CREATE TABLE IF NOT EXISTS pdf_files (
-                            id INT AUTO_INCREMENT PRIMARY KEY,
-                            uploaded_pdf LONGBLOB,
-                            underlined_pdf LONGBLOB)''')
-
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        uploaded_pdf LONGBLOB,
+                        underlined_pdf LONGBLOB)''')
+    # Create pdf_images table
     cursor.execute('''CREATE TABLE IF NOT EXISTS pdf_images (
                         id INT AUTO_INCREMENT PRIMARY KEY,
                         page_number INT,
                         image LONGBLOB,
                         pdf_id INT,
                         FOREIGN KEY (pdf_id) REFERENCES pdf_files (id))''')
+    # Create users table
     cursor.execute('''CREATE TABLE IF NOT EXISTS users (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    username VARCHAR(255),
-                    password VARCHAR(255),
-                    email VARCHAR(255),
-                    phone_number VARCHAR(255),
-                    aadhaar_number VARCHAR(255),
-                    pan_number VARCHAR(255),
-                    dl_number VARCHAR(255)
-                );''')
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        username VARCHAR(255),
+                        password VARCHAR(255),
+                        email VARCHAR(255),
+                        phone_number VARCHAR(255),
+                        aadhaar_number VARCHAR(255),
+                        pan_number VARCHAR(255),
+                        dl_number VARCHAR(255));''')
+    # Create companies table
+    cursor.execute('''CREATE TABLE IF NOT EXISTS companies (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        company_name VARCHAR(255),
+                        is_mail BOOL,
+                        is_phone BOOL,
+                        is_aadhaar BOOL,
+                        is_pan BOOL,
+                        is_dlno BOOL
+                    );''')
     conn.commit()
     cursor.close()
     conn.close()
@@ -110,3 +122,20 @@ def check_user_exists_in_db(email, password):
             cursor.close()
         if conn:
             conn.close()
+
+def create_company_in_db(company_name, is_mail, is_phone, is_aadhaar, is_pan, is_dlno):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO users (company_name, is_mail, is_phone, is_aadhaar, is_pan, is_dlno) VALUES (%s, %s, %s, %s)", (company_name, is_mail, is_phone, is_aadhaar, is_pan, is_dlno))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def get_companies_from_db():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM companies")
+    results = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return results

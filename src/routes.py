@@ -2,7 +2,7 @@ from flask import request, jsonify, send_file
 from io import BytesIO
 from src.pdf_processing import extract_numbers_in_pdf, underline_numbers_in_pdf, convert_pdf_to_images
 from src.image_processing import extract_numbers_in_image
-from src.db import save_pdf_to_db, get_pdf_from_db, get_image_from_db, get_pdf_count, create_user_in_db, check_user_exists_in_db
+from src.db import save_pdf_to_db, get_pdf_from_db, get_image_from_db, get_pdf_count, create_user_in_db, check_user_exists_in_db, create_company_in_db, get_companies_from_db
 import os
 import fitz
 from src.config import API_KEY
@@ -58,6 +58,47 @@ def register_routes(app):
         except Exception as e:
                 return jsonify({"error": str(e)}), 500
 
+    @app.route('/create_company', methods=['POST'])
+    def create_company():
+        key = request.form.get('key')
+        company_name = request.form.get('company_name')
+        is_mail = request.form.get('is_mail')
+        is_phone = request.form.get('is_phone')
+        is_aadhaar = request.form.get('is_aadhaar')
+        is_pan = request.form.get('is_pan')
+        is_dlno = request.form.get('is_dlno')
+
+        if key != API_KEY:
+            return jsonify({
+                "error": "Invalid key"
+            }), 401
+
+        if not company_name or not is_mail or not is_phone or not is_aadhaar or not is_pan or not is_dlno:
+            return jsonify({
+                "error": "Missing required fields"
+            }), 400
+        else:
+            create_company_in_db(company_name, is_mail, is_phone, is_aadhaar, is_pan, is_dlno)
+
+        return jsonify({
+            "message": "Company created successfully!",
+        })
+
+    @app.route('/get_companies', methods=['GET'])
+    def get_companies():
+        key = request.args.get('key')
+
+        if key != API_KEY:
+            return jsonify({
+                "error": "Invalid key"
+            }), 401
+
+        company_details = get_companies_from_db()
+
+        return jsonify({
+            "message": "Company details fetched successfully!",
+            "company_details": company_details
+        })
 
     @app.route('/upload_pdf', methods=['POST'])
     def upload_pdf():
