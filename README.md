@@ -1,5 +1,7 @@
 # Smart India Hackathon Pre Project
 
+> Note: This project was created as a part of the Smart India Hackathon Pre Project. The project was created in a span of 2 weeks.
+
 ## Problem Statement
 Creating an application to identify the presence of government issued personally identifiable information (PII) embedded in documents and data, inadvertently or otherwise.
 
@@ -16,6 +18,7 @@ Creating an application to identify the presence of government issued personally
 ### API Endpoints:
 
 #### Base URL: `https://sih-api.knsrinath.com`
+> Note: The API server is no longer running. You can run the server locally.
 
 ##### POST:
 
