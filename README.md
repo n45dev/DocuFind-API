@@ -13,6 +13,12 @@ Creating an application to identify the presence of government issued personally
 5. Shashikanth
 6. Chaitanya Medaboina
 
+## To Do:
+- [ ] Add all endpoints in README.md
+- [ ] Secure the API
+- [ ] Add error handling
+- [ ] Use proper endpoint names
+
 ## Instructions to use the API server
 
 ### API Endpoints:
