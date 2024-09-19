@@ -1,6 +1,6 @@
 # Smart India Hackathon Pre Project
 
-> Note: This project was created as a part of the Smart India Hackathon Pre Project. The project was created in a span of 2 weeks.
+> Note: This project was created as a part of the Smart India Hackathon Pre Project. The project was created in a span of 2 weeks. This is my first time working with Flask. The project is not perfect and there are many improvements that can be made.
 
 ## Problem Statement
 Creating an application to identify the presence of government issued personally identifiable information (PII) embedded in documents and data, inadvertently or otherwise.
