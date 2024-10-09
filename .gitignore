@@ -3,3 +3,5 @@ data/
 .env
 __pycache__/
 sih_api/
+.idea
+.ipynb_checkpoints/
