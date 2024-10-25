@@ -18,7 +18,7 @@ Creating an application to identify the presence of government issued personally
 - [ ] Secure the API
 - [ ] Add error handling
 - [ ] Use proper endpoint names
-- [ ] Implement GitHub Actions
+- [x] Implement GitHub Actions
 
 ## Instructions to use the API server
 
