@@ -1,24 +1,17 @@
-# Smart India Hackathon Pre Project
+# Smart India Hackathon Project
 
-> Note: This project was created as a part of the Smart India Hackathon Pre Project. The project was created in a span of 2 weeks. This is my first time working with Flask. The project is not perfect and there are many improvements that can be made.
+> Note: This project was created as a part of the Smart India Hackathon Pre Project. The project was created in a span of 2 weeks.
 
 ## Problem Statement
 Creating an application to identify the presence of government issued personally identifiable information (PII) embedded in documents and data, inadvertently or otherwise.
 
 ## Team Members
 1. Samyak Sanganeria
-2. [Naga Srinath](https://knsrinath.com)
+2. Naga Srinath
 3. Shinde Kaushik
 4. Himagiri Nandhan
 5. Shashikanth
 6. Chaitanya Medaboina
-
-## To Do:
-- [ ] Add all endpoints in README.md
-- [ ] Secure the API
-- [ ] Add error handling
-- [ ] Use proper endpoint names
-- [x] Implement GitHub Actions
 
 ## Instructions to use the API server
 
